@@ -1,0 +1,551 @@
+<html lang="en">
+<head>
+
+
+<style>
+#moveBtn {
+	height:50px;
+	width:200px;
+	border:thin
+}
+
+button {
+	padding-left: 0;
+    padding-right: 0;
+    margin-left: auto;
+    margin-right: auto;
+	height: 50px;
+	width: 165px;
+    display: block;
+}
+body {
+    background-image: url("http://eskipaper.com/images/binary-wallpaper-4.jpg");
+}
+div {
+    background-color: white;
+}
+td {
+    background-color: white;
+}
+</style>
+
+
+</head>
+
+
+<body>
+<table align="center">
+<tr>
+<td>
+<canvas id="topDownView" align="center" width="750" height="500" style="border:5px solid #000000;padding-left: 0;padding-right: 0;margin-left: auto;margin-right: auto;display: block">
+</canvas>
+</td>
+<td>
+<canvas id="rayCasting" align="center" width="750" height="500" style="border:5px solid #000000;padding-left: 0;padding-right: 0;margin-left: auto;margin-right: auto;display: block">
+</canvas>
+</td>
+</tr>
+<tr>
+<td>
+<form background-color="white">
+  Room : <input id="room" type="number" name="quantity" value="4" min="1" max="10">
+  
+</form>
+</td>
+<td>
+<div>
+<form background-color="white">
+  Quality (between 1 and 750): <input id="quantity" type="number" name="quantity" value="75" min="1" max="750">
+  
+</form>
+</div>
+</td>
+</tr>
+</table>
+
+
+
+
+<script>
+//Key Press Event Detection---------------------------------------------------------------------------------------------------------------------------
+input = {up:false,down:false,left:false,right:false};
+document.onkeydown = pressKeyDown;//Documents the onKeyDown event
+function pressKeyDown(e) {
+
+    e = e || window.event;//e is window event with code for keys
+
+    if (e.keyCode == '38') {
+		input.up = true;//simulates upward motion
+        // up arrow
+    }
+    else if (e.keyCode == '40') {
+		input.down = true;//simulates downward motion
+        // down arrow
+    }
+    else if (e.keyCode == '37') {
+		input.left = true;//simulates leftward motion
+       // left arrow
+    }
+    else if (e.keyCode == '39') {
+		input.right = true;//simulates rightward motion
+       // right arrow
+    }
+
+}
+document.onkeyup = pressKeyUp;//Documents the onKeyUp event
+function pressKeyUp(e) {
+
+    e = e || window.event;//e is window event with code for keys
+
+    if (e.keyCode == '38') {
+		input.up = false;//simulates upward motion
+        // up arrow
+    }
+    else if (e.keyCode == '40') {
+		input.down = false;//simulates downward motion
+        // down arrow
+    }
+    else if (e.keyCode == '37') {
+		input.left = false;//simulates leftward motion
+       // left arrow
+    }
+    else if (e.keyCode == '39') {
+		input.right = false;//simulates rightward motion
+       // right arrow
+    }
+
+}
+function checkInputs(roomNum) {
+	if(input.up){
+		moveUp(roomNum);
+	}
+	if(input.down){
+		moveDown();
+	}
+	if(input.left){
+		moveLeft();
+	}
+	if(input.right){
+		moveRight();
+	}
+}
+//END Key Press Event Detection---------------------------------------------------------------------------------------------------------------------------
+
+
+
+
+
+//Miscelaneous---------------------------------------------------------------------------------------------------------------------------
+function baseCon(value, base, baseTo) {
+	test = parseInt(Math.round(value), base).toString(baseTo);
+	//console.log(test);
+	return test;
+}
+//END Miscelaneous---------------------------------------------------------------------------------------------------------------------------
+
+
+
+
+
+//Creating Player----------------------------------------------------------------------------------------------------------------------------
+var Player = {x_pos:2500, y_pos:2500, health:100, world_x_pos:0, world_y_pos:0, facing:0, radius:100, roomNum:3};
+VISIONARC = 3*Math.PI/8;
+function checkFacing() {
+	if(Player.facing> 2*Math.PI){
+		Player.facing -= Math.PI*2;
+	}
+}
+//console.log(Player.facing);
+//END Creating Player--------------------------------------------------------------------------------------------------------------------------
+
+
+
+
+
+//Movement Functions----------------------------------------------------------------------------------------------------------------------------
+MOVESPEED = 10;
+TURNSPEED = Math.PI/90;
+function moveLeft() {//LEFT
+	Player.facing -= TURNSPEED;
+	//console.log("left");
+}
+
+function moveRight() {//RIGHT
+	Player.facing += TURNSPEED;
+	//console.log("right");
+}
+
+function moveUp(roomNum) {//UP
+	//console.log("forward");
+	checkDestUp(roomNum);
+	
+}
+
+function moveDown() {//DOWN
+	//console.log("down");
+	Player.x_pos -= MOVESPEED*Math.cos(Player.facing)/2;
+	Player.y_pos -= MOVESPEED*Math.sin(Player.facing)/2;
+}
+
+function moveAction() {//ACTION1 not bound except for button
+	//console.log("action");
+}
+
+function moveAction2() {//ACTION2 not bound except for button
+	//console.log("action2");
+}
+
+
+//END Movement Functions----------------------------------------------------------------------------------------------------------------------------
+
+
+
+
+
+//Checking Movement----------------------------------------------------------------------------------------------------------------------------------
+var c2 = document.getElementById("rayCasting");
+function checkDestUp(roomNum) {
+	xmov = Math.cos(Player.facing)/Math.abs(Math.cos(Player.facing));
+	ymov = Math.sin(Player.facing)/Math.abs(Math.sin(Player.facing));
+	
+	if(maps[roomNum][Math.floor((Player.y_pos + MOVESPEED*Math.sin(Player.facing)+Player.radius*ymov)*maps[roomNum].length/(c2.height*10))][Math.floor((Player.x_pos + MOVESPEED*Math.cos(Player.facing)+Player.radius*xmov)*maps[roomNum][0].length/(c2.width*10))][0]<250){
+		Player.y_pos += MOVESPEED*Math.sin(Player.facing);
+		Player.x_pos += MOVESPEED*Math.cos(Player.facing);
+	} else {
+		if(maps[roomNum][Math.floor((Player.y_pos)*maps[roomNum].length/(c2.height*10))][Math.floor((Player.x_pos + MOVESPEED*Math.cos(Player.facing)+Player.radius*xmov)*maps[roomNum][0].length/(c2.width*10))][0]<250) {
+			//this condition will check the collision for the x movement
+			Player.x_pos += MOVESPEED*Math.cos(Player.facing);
+		} else if(!(maps[roomNum][Math.floor((Player.y_pos)*maps[roomNum].length/(c2.height*10))][Math.floor((Player.x_pos + MOVESPEED*Math.cos(Player.facing)+Player.radius*(-xmov))*maps[roomNum][0].length/(c2.width*10))][0]<250)){
+			Player.x_pos += MOVESPEED*Math.cos(Player.facing);
+		}
+		if(maps[roomNum][Math.floor((Player.y_pos + MOVESPEED*Math.sin(Player.facing)+Player.radius*ymov)*maps[roomNum].length/(c2.height*10))][Math.floor((Player.x_pos)*maps[roomNum][0].length/(c2.width*10))][0]<250) {
+			//this condition will check the collision for the y movement
+			Player.y_pos += MOVESPEED*Math.sin(Player.facing);
+		} else if(!(maps[roomNum][Math.floor((Player.y_pos + MOVESPEED*Math.sin(Player.facing)+Player.radius*(-ymov))*maps[roomNum].length/(c2.height*10))][Math.floor((Player.x_pos)*maps[roomNum][0].length/(c2.width*10))][0]<250)){
+			Player.y_pos += MOVESPEED*Math.sin(Player.facing);
+		}
+	}
+}
+/*function checkArc() {
+	for(){
+		if(){
+			return true;
+		}
+	}
+	return false;
+}*/
+//END Checking Movement----------------------------------------------------------------------------------------------------------------------------------
+
+
+
+
+
+//Map Creation-------------------------------------------------------------------------------------------------------------------------------------
+/*
+ * All rooms are defined by matricies with integers for the values corresponding
+ * to the different types of tiles consisting of a variety of types and colors
+ * 
+ * TYPES:
+ * 	Step Tiles: All of these numbers allow the player to stand on the tile
+ * 	Floor = 0 to 49; the values 0-50 are normal floor tiles
+ *	Tele = 50 to 99; the values 50-99 are teleporter tiles to switch rooms
+ *	Switch = 100 to 149; the values 100-149 are all floor switches the player can step on
+ *	Trap = 150 to 199; the values 150-199 are trap tiles that activate when the player steps on them
+ *	
+ *	Wall Tiles:
+ *	Door = 200 to 249;the values 200-249 are openable doors
+ *	Wall = 250 to 499; the values 250-499 are all walls
+ *	
+ *	
+ *	The players see a room with 5000 by 5000 possible locations while the code can draw rooms with 50 by 50 tiles
+ *	
+ *	
+ */	
+maps = [[[[250],[250],[250],[250],[250],[250],[250],[250],[250],[250]],
+[[250],[0],[0],[0],[0],[0],[0],[0],[0],[250]],
+[[250],[0],[0],[0],[0],[0],[0],[0],[0],[250]],
+[[250],[0],[0],[250],[250],[250],[250],[0],[0],[250]],
+[[250],[0],[0],[250],[0],[0],[250],[0],[0],[250]],
+[[250],[0],[0],[250],[0],[0],[250],[0],[0],[250]],
+[[250],[0],[0],[0],[0],[0],[0],[0],[0],[250]],
+[[250],[0],[0],[0],[0],[0],[0],[0],[0],[250]],
+[[250],[0],[0],[0],[0],[0],[0],[0],[0],[250]],
+[[250],[250],[250],[250],[250],[250],[250],[250],[250],[250]]],
+
+[[[250],[250],[250],[250],[250],[250],[250],[250],[250],[250],[250]],
+[[250],[0],[0],[0],[0],[0],[0],[0],[0],[0],[250]],
+[[250],[0],[0],[0],[250],[250],[250],[0],[0],[0],[250]],
+[[250],[0],[0],[0],[250],[0],[250],[0],[0],[0],[250]],
+[[250],[0],[0],[0],[250],[0],[250],[0],[0],[0],[250]],
+[[250],[0],[0],[0],[0],[0],[0],[0],[0],[0],[250]],
+[[250],[0],[0],[0],[0],[0],[0],[0],[0],[0],[250]],
+[[250],[0],[0],[0],[0],[0],[0],[0],[0],[0],[250]],
+[[250],[0],[0],[0],[0],[0],[0],[0],[0],[0],[250]],
+[[250],[250],[250],[250],[250],[250],[250],[250],[250],[250],[250]]],
+	
+[[[250],[250],[250],[250],[250],[250],[250],[250],[250],[250],[250]],
+[[250],[0],[0],[0],[0],[0],[0],[0],[0],[0],[250]],
+[[250],[0],[0],[0],[250],[250],[250],[0],[0],[0],[250]],
+[[250],[0],[0],[0],[250],[0],[250],[0],[0],[0],[250]],
+[[250],[0],[0],[0],[250],[0],[250],[0],[0],[0],[250]],
+[[250],[0],[0],[0],[0],[0],[0],[0],[0],[0],[250]],
+[[250],[0],[0],[0],[0],[0],[0],[0],[0],[0],[250]],
+[[250],[0],[0],[0],[0],[0],[0],[0],[0],[0],[250]],
+[[250],[250],[250],[250],[250],[250],[250],[250],[250],[250],[250]]],
+
+[[[250],[250],[250],[250],[250],[250],[250],[250],[250],[250],[250],[250],[250],[250],[250],[250]],
+[[250],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[250]],
+[[250],[0],[0],[0],[0],[0],[0],[0],[0],[252],[252],[252],[0],[0],[0],[250]],
+[[250],[0],[0],[0],[0],[0],[0],[0],[0],[252],[0],[252],[0],[0],[0],[250]],
+[[250],[0],[0],[0],[0],[0],[0],[0],[0],[252],[0],[252],[0],[0],[0],[250]],
+[[250],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[250]],
+[[250],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[250]],
+[[250],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[250]],
+[[250],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[250]],
+[[250],[250],[250],[250],[250],[250],[250],[250],[250],[250],[250],[250],[250],[250],[250],[250]]],
+
+[[[250],[250],[250],[250],[250],[250],[250],[250],[250],[250],[250],[250],[250],[250],[250],[250]],
+[[250],[252],[0],[252],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[250]],
+[[250],[252],[0],[252],[0],[252],[252],[252],[0],[252],[252],[252],[0],[0],[0],[250]],
+[[250],[252],[0],[252],[0],[252],[252],[0],[0],[252],[0],[252],[0],[0],[0],[250]],
+[[250],[252],[0],[0],[0],[252],[252],[0],[252],[252],[0],[252],[0],[0],[0],[250]],
+[[250],[0],[0],[0],[0],[252],[252],[0],[252],[252],[0],[0],[0],[0],[0],[250]],
+[[250],[0],[252],[252],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[0],[250]],
+[[250],[0],[252],[0],[0],[252],[252],[0],[252],[252],[252],[0],[0],[0],[0],[250]],
+[[250],[0],[0],[0],[252],[252],[252],[0],[0],[0],[0],[0],[0],[0],[0],[250]],
+[[250],[250],[250],[250],[250],[250],[250],[250],[250],[250],[250],[250],[250],[250],[250],[250]]],
+
+[]]
+
+/*
+ * The world variable defines the world map where the number of the
+ * spot in the matrix corresponds to the map type that way similar 
+ * map types may be reused
+ *
+ */
+world = []
+var tileColors = new Array(500);
+tileColors[250]=[100,100,100];
+tileColors[251] = [255,255,255];
+tileColors[252] = [00,55,00]
+//END Map Creation-------------------------------------------------------------------------------------------------------------------------------------
+
+
+
+
+
+//Drawing2D----------------------------------------------------------------------------------------------------------------------------------
+PLAYERRADIUS = Player.radius/10;
+function draw2DPlayer() {//draws the player in the 2D window
+	var c = document.getElementById("topDownView");//references 2D canvas
+	var ctx = c.getContext("2d");
+	ctx.beginPath();//Draws player
+    ctx.arc(Math.round(Player.x_pos/10), Math.round(Player.y_pos/10), PLAYERRADIUS, 0, 2 * Math.PI, false);
+	ctx.lineWidth = 1;
+	ctx.strokeStyle = 'blue';
+    ctx.fillStyle = 'blue';
+    ctx.fill();
+	ctx.stroke();
+	
+	ctx.beginPath();//draws vision arc
+    ctx.arc(Math.round(Player.x_pos/10), Math.round(Player.y_pos/10), PLAYERRADIUS*(5/4), Player.facing - (VISIONARC/2),Player.facing + (VISIONARC/2), false);
+	ctx.lineWidth = 2;
+    ctx.strokeStyle = '#770000';
+    ctx.stroke();
+	
+	ctx.beginPath();//draws facing line
+	ctx.moveTo(Math.round(Player.x_pos/10), Math.round(Player.y_pos/10));
+	ctx.lineTo(Math.round(Player.x_pos/10)+(PLAYERRADIUS*(5/4)*Math.cos(Player.facing)), Math.round(Player.y_pos/10)+(PLAYERRADIUS*(5/4)*Math.sin(Player.facing)));
+	ctx.stroke();
+}
+function draw2D(roomNumber) {//this function simply loads the next frame for the 2D window
+	draw2DRoom(roomNumber);
+	draw2DPlayer();
+}
+function draw2DRoom(roomNum) {//this function draws the room tiles
+	var c = document.getElementById("topDownView");
+	var ctx = c.getContext("2d");
+	ctx.beginPath();
+	ctx.rect(0,0,c.width,c.height);
+	ctx.fillStyle = '#007700';
+	ctx.fill();
+	ctx.stroke();
+	for(y=0;y<maps[roomNum].length;y++){//draws all rows
+		for(x=0;x<maps[roomNum][y].length;x++){//draws each collumn
+			//console.log(maps[roomNum][y][x][0]);//for debugging purposes
+			draw2DTile(maps[roomNum][y][x][0],x,y,roomNum);//draws the tile
+		}
+	}
+}
+function draw2DTile(value, x, y, roomNum) {
+	if(value == 0){
+		
+	} else {
+		var c = document.getElementById("topDownView");
+		var ctx = c.getContext("2d");
+                var tileSizex = c.width / maps[roomNum][y].length;
+                var tileSizey = c.height / maps[roomNum].length;
+		//console.log(maps[roomNum][y][x][0]);
+		if(value >= 250){
+			ctx.fillStyle = getColorByTile(maps[roomNum][y][x][0]);
+			ctx.fillRect((x)*tileSizex,(y)*tileSizey,tileSizex,tileSizey);
+			ctx.fillStyle = getColorByTile(maps[roomNum][y][x][0]);
+			
+		}
+		/*ctx.fillStyle = "#00FF00";
+		ctx.font = "40px Arial";
+		ctx.fillText(value,(500/maps[roomNum][y].length)*(x)+10,500/maps[roomNum].length*(y+1)-10);
+		//50*(y+1)-5,50*(x)+5*/
+	}
+}
+function getColorByTile(wallValue) {
+	rVal = tileColors[wallValue][0];
+	bVal = tileColors[wallValue][1];
+	gVal = tileColors[wallValue][2];
+	hexColor = "#"+hexSyntax(baseCon(rVal,10,16))+hexSyntax(baseCon(bVal,10,16))+hexSyntax(baseCon(gVal,10,16));
+	//console.log(hexColor);
+	return hexColor;
+	
+}
+//END Drawing2D----------------------------------------------------------------------------------------------------------------------------------
+
+
+
+
+
+//Draw 3D----------------------------------------------------------------------------------------------------------------------------------
+
+wall = {distance:0,color:"",found:false,x_dis:0,y_dis:0,midDis:0,value:0,scaling:1.5};
+var c2 = document.getElementById("rayCasting");
+quality = c2.width/quantity;
+function draw3DWalls(roomNum) {
+	for(x=0;x<c2.width/quality;x++){
+		angle = (-(VISIONARC / 2)+(x*VISIONARC*quality/c2.width));
+		wall.found = false;wall.x_dis = 0;wall.y_dis = 0;
+		do{
+			wall.x_dis += 10*Math.cos(Player.facing + angle);
+			wall.y_dis += 10*Math.sin(Player.facing + angle);
+			/*if(wall.y_dis < 0){
+			yDist = Math.floor((Player.y_pos+wall.y_dis)/(c2.width*10/maps[roomNum].length));
+			} else if(wall.y_dis > 0) {
+			yDist = Math.ceil((Player.y_pos+wall.y_dis)/(c2.width*10/maps[roomNum].length));
+			}
+			if(wall.x_dis < 0){
+			xDist = Math.floor((Player.x_pos+wall.x_dis)/(c2.width*10/maps[roomNum][0].length));
+			} else if(wall.x_dis > 0) {
+			xDist = Math.ceil((Player.x_pos+wall.x_dis)/(c2.width*10/maps[roomNum][0].length));
+			}*///an attempt for me to fix my issue, previously math.round was used and it screwed up the rendering
+			xDist=Math.floor((Player.x_pos+wall.x_dis)/(c2.width*10/maps[roomNum][0].length));
+			yDist=Math.floor((Player.y_pos+wall.y_dis)/(c2.height*10/maps[roomNum].length));
+			if(maps[roomNum][yDist][xDist][0] >= 250){
+				wall.found = true;
+				wall.value = maps[roomNum][yDist][xDist][0];
+				//wall.distance = wall.scaling*Math.abs(Math.sqrt((Math.pow(wall.y_dis,2) + Math.pow(wall.x_dis,2)))*Math.cos(angle));
+                                wall.distance = wall.scaling*Math.abs(Math.sqrt((Math.pow(wall.y_dis,2) + Math.pow(wall.x_dis,2)))*Math.cos(angle));
+				if (x==250) {
+					wall.midDis = wall.distance;
+				}
+				if (input.down) {console.log(wall.midDis);}
+			}
+		}while(!wall.found);
+		draw3DLine(x, quality)
+	}
+}
+function draw3DRoomClear() {
+	/*var c2 = document.getElementById("rayCasting");
+	var ctx2 = c2.getContext("2d");
+	ctx2.clearRect(0, 0, c2.width, c2.height);*/
+}
+function draw3DLine(pixelNum, quality) {
+	var c2 = document.getElementById("rayCasting");
+	var ctx2 = c2.getContext("2d");
+	color = getColorByDistance(wall.value,wall.distance);//takes the value to hexidecimal
+        //dist = 500*Math.pow(2, -(wall.distance+8*Player.radius)/1000);
+        dist = wall.distance/100;
+	if(dist<0){
+		dist = 0;
+	}
+	for(n = 0;n<quality;n++){
+		ctx2.beginPath();//draws pixel line
+                ctx2.moveTo(pixelNum*quality + n, (dist+(c2.height/5)));//draws the sky
+		ctx2.lineTo(pixelNum*quality + n,0);
+		ctx2.strokeStyle = '#8888FF';
+		ctx2.stroke();
+		ctx2.beginPath();//draws pixel line
+                ctx2.moveTo(pixelNum*quality + n, (dist+(c2.height/5)));//draws the bottom of the wall
+		ctx2.lineTo(pixelNum*quality + n,((c2.height)-dist));//draws the top of the wall
+		ctx2.strokeStyle = color;
+		ctx2.stroke();
+		ctx2.beginPath();//draws pixel line
+                ctx2.moveTo(pixelNum*quality + n, c2.height);//draws the grass
+		ctx2.lineTo(pixelNum*quality + n,((c2.height)-dist));
+		ctx2.strokeStyle = '#007700';
+		ctx2.stroke();
+	}
+}
+function draw3DRoom(roomNum) {
+	draw3DRoomClear();
+	draw3DWalls(roomNum);
+	
+}
+function getColorByDistance(wallValue,dist) {
+	//console.log(""+wallValue+"   "+tileColors[wallValue]);
+	rVal = tileColors[wallValue][0];
+	bVal = tileColors[wallValue][1];
+	gVal = tileColors[wallValue][2];
+	//console.log(rVal+"   "+255*Math.pow(2,-rVal/1000)+"   "+baseCon(255*Math.pow(2,-rVal/1000),10,16));
+	rVal = hexBrighten(rVal*Math.pow(2,-(dist+16*Player.radius)/5000));
+	bVal = hexBrighten(bVal*Math.pow(2,-(dist+16*Player.radius)/5000));
+	gVal = hexBrighten(gVal*Math.pow(2,-(dist+16*Player.radius)/5000));
+	hexColor = "#"+hexSyntax(baseCon(rVal,10,16))+hexSyntax(baseCon(bVal,10,16))+hexSyntax(baseCon(gVal,10,16));
+	//console.log(hexColor);
+	return hexColor;
+	
+}
+function hexSyntax(value) {
+	if(value.length==1){
+		return ("0"+value);
+	}
+	return value;
+}
+function hexBrighten(value) {
+	if(value<=200){
+		return value =value*(5/4);
+	}
+	return value;
+}
+//END Draw 3D----------------------------------------------------------------------------------------------------------------------------------
+
+
+
+
+
+//Update----------------------------------------------------------------------------------------------------------------------------------
+function update() {
+	if(document.getElementById("quantity").value<=750&&document.getElementById("quantity").value>=1){
+		quantity = document.getElementById("quantity").value;
+		quality = c2.width/quantity;
+	}
+	if(document.getElementById("room").value<=maps.length-1&&document.getElementById("room").value>=1){
+		Player.roomNum = document.getElementById("room").value-1;
+	}
+	checkInputs(Player.roomNum);
+	checkFacing();
+	
+	//console.log(Player.facing);//For debugging purposes
+}
+setInterval(function() {update()},10);
+function updateVisuals() {
+	draw2D(Player.roomNum);
+	draw3DRoom(Player.roomNum);
+}
+setInterval(function() {updateVisuals()},50);
+//END Update----------------------------------------------------------------------------------------------------------------------------------
+
+
+
+
+
+</script>
+</body>
+</html>
