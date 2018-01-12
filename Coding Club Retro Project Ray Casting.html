@@ -2,51 +2,40 @@
 <head>
 <title>Retro-casting</title>
 <link href='styling.css' rel='stylesheet' type='text/css'>
-
 </head>
 <body>
 <table align="center">
-<tr>
-<td>
-<!-- This first canvas will present the 2D interpretation for reference -->
-<canvas id="topDownView" align="center" width="750" height="500" style="border:5px solid #000000;padding-left: 0;padding-right: 0;margin-left: auto;margin-right: auto;display: block">
-</canvas>
-</td>
-<td>
-<!-- This second canvas will present the 3D interpretation -->
-<canvas id="rayCasting" align="center" width="750" height="500" style="border:5px solid #000000;padding-left: 0;padding-right: 0;margin-left: auto;margin-right: auto;display: block">
-</canvas>
-</td>
-</tr>
-<tr>
-<td>
-<!-- This input allows a user to change the room being tested -->
-<form background-color="white">
-  Room : <input id="room" type="number" name="quantity" value="4" min="1" max="10">
-  
-</form>
-</td>
-<td>
-<div>
-<!-- This input lets the user change the quality of the render -->
-<form background-color="white">
-  Quality (between 1 and 750): <input id="quantity" type="number" name="quantity" value="75" min="1" max="750">
-  
-</form>
-</div>
-</td>
-</tr>
+	<tr>
+		<td>
+			<!-- This first canvas will present the 2D interpretation for reference -->
+			<canvas id="topDownView" align="center" width="750" height="500" style="border:5px solid #000000;padding-left: 0;padding-right: 0;margin-left: auto;margin-right: auto;display: block">
+			</canvas>
+		</td>
+		<td>
+			<!-- This second canvas will present the 3D interpretation -->
+			<canvas id="rayCasting" align="center" width="750" height="500" style="border:5px solid #000000;padding-left: 0;padding-right: 0;margin-left: auto;margin-right: auto;display: block">
+			</canvas>
+		</td>
+	</tr>
+	<tr>
+		<td>
+			<!-- This input allows a user to change the room being tested -->
+			<form background-color="white">Room : <input id="room" type="number" name="quantity" value="4" min="1" max="10"></form>
+		</td>
+		<td>
+			<div>
+				<!-- This input lets the user change the quality of the render -->
+				<form background-color="white">Quality (between 1 and 750): <input id="quantity" type="number" name="quantity" value="75" min="1" max="750"></form>
+			</div>
+		</td>
+	</tr>
 </table>
-
-
-
-<link href='keyInput.js' rel='script' type='text/javascript'>
-<link href='player.js' rel='script' type='text/javascript'>
-<link href='mapCreation.js' rel='script' type='text/javascript'>
-<link href='2DRendering.js' rel='script' type='text/javascript'>
-<link href='3DRendering.js' rel='script' type='text/javascript'>
+<script src='keyInput.js'></script>
+<script src='player.js'></script>
+<script src='mapCreation.js'></script>
+<script src='2DRendering.js'></script>
+<script src='3DRendering.js'></script>
 <script>
-
 //Update----------------------------------------------------------------------------------------------------------------------------------
 function update() {//this is the function I use to run the program constantly
 	if(document.getElementById("quantity").value<=750&&document.getElementById("quantity").value>=1){//checks the user input for the rendering quality

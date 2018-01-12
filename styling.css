@@ -6,19 +6,22 @@
 
 button {
 	padding-left: 0;
-    padding-right: 0;
-    margin-left: auto;
-    margin-right: auto;
+	padding-right: 0;
+	margin-left: auto;
+	margin-right: auto;
 	height: 50px;
 	width: 165px;
-    display: block;
+	display: block;
 }
+
 body {
-    background-image: url("http://eskipaper.com/images/binary-wallpaper-4.jpg");
+	background-image: url("http://eskipaper.com/images/binary-wallpaper-4.jpg");
 }
+
 div {
-    background-color: white;
+	background-color: white;
 }
+
 td {
-    background-color: white;
+	background-color: white;
 }

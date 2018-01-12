@@ -3,7 +3,6 @@
  *
  */
 
-
 //Creating Player----------------------------------------------------------------------------------------------------------------------------
 var Player = {x_pos:2500, y_pos:2500, health:100, world_x_pos:0, world_y_pos:0, facing:0, radius:100, roomNum:3};// initializes the player
 VISIONARC = 3*Math.PI/8;//a final variable that sets the field of view
