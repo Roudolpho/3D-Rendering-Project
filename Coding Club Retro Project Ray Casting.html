@@ -38,9 +38,10 @@
 <script>
 //Update----------------------------------------------------------------------------------------------------------------------------------
 function update() {//this is the function I use to run the program constantly
-	if(document.getElementById("quantity").value<=750&&document.getElementById("quantity").value>=1){//checks the user input for the rendering quality
+	if(document.getElementById("quantity").value<=750&&document.getElementById("quantity").value>=1 && quantity != document.getElementById("quantity").value){//checks the user input for the rendering quality
 		quantity = document.getElementById("quantity").value;
 		quality = c2.width/quantity;
+		angles = getAngles(quantity);
 	}
 	if(document.getElementById("room").value<=maps.length-1&&document.getElementById("room").value>=1){//checks the user input for the room number
 		Player.roomNum = document.getElementById("room").value-1;

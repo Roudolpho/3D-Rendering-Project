@@ -25,9 +25,28 @@ function draw2DPlayer() {//draws the player in the 2D window
 	ctx.lineTo(Math.round(Player.x_pos/10)+(PLAYERRADIUS*(5/4)*Math.cos(Player.facing)), Math.round(Player.y_pos/10)+(PLAYERRADIUS*(5/4)*Math.sin(Player.facing)));
 	ctx.stroke();//ends drawing of facing line
 }
+
+function visualizeCasting() {
+	console.log(wallIntersections);
+	wallIntersections.forEach(location => {
+		console.log('try');
+		var c = document.getElementById("topDownView");//references 2D canvas
+		var ctx = c.getContext("2d");
+		ctx.beginPath();//Draws line at player
+		ctx.moveTo(Math.round(Player.x_pos/10), Math.round(Player.y_pos/10));
+		ctx.lineTo(location[0], location[1]);
+		ctx.lineWidth = 1;
+		ctx.strokeStyle = 'yellow';
+		ctx.fillStyle = 'yellow';
+		ctx.fill();
+		ctx.stroke();//ends drawing of line
+	});
+}
+
 function draw2D(roomNumber) {//this function simply loads the next frame for the 2D window
 	draw2DRoom(roomNumber);
 	draw2DPlayer();
+	visualizeCasting(wallIntersections);
 }
 function draw2DRoom(roomNum) {//this function draws the room tiles for the 2D interpretation
 	var c = document.getElementById("topDownView");

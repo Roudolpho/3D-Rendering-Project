@@ -12,17 +12,64 @@ function baseCon(value, base, baseTo) {// simple base converter for changing val
 
 //Draw 3D----------------------------------------------------------------------------------------------------------------------------------
 wall = {distance:0,color:"",found:false,x_dis:0,y_dis:0,midDis:0,value:0,scaling:1.5};//this object is to help me organize my variables
-var c2 = document.getElementById("rayCasting");
-quality = c2.width/quantity;
+var canvas3D = document.getElementById("rayCasting");
+quality = canvas3D.width/quantity;
+angles = getAngles(quantity);
+wallIntersections = [];
+
+function getAngles(num){
+	angleList = [];
+	L = 2 * Math.tan(VISIONARC/2);
+	interval = L/quantity;
+	for(i = 0; i < quantity; i++){
+		angleList.push(/*-(VISIONARC / 2)*/ + Math.atan((L/2) - interval*((1/2) + i)));
+	}
+	console.log(angleList);
+	return angleList;
+}
+
 function draw3DWalls(roomNum) {//Draws walls for the 3D interpretation
-	for(x=0;x<c2.width/quality;x++){//draws to each pixel in the canvas width
-		angle = (-(VISIONARC / 2)+(x*VISIONARC*quality/c2.width));//math to determine the angle corresponding to any given pixel on the canvas
+	x = quantity;
+	wallIntersectionsTemp = [];
+	angles.forEach(angle => {//draws to each pixel in the canvas width
+		x--;
+		wall.found = false;wall.x_dis = 0;wall.y_dis = 0;//resets the variables in the wall object 
+		xd2 = 0;
+		yd2 = 0;
+		do{//searches incremental for a wall tile in a specific direction
+			wall.x_dis += 10*Math.cos(Player.facing + angle);//finds x distance
+			xd2 += Math.cos(Player.facing + angle);
+			wall.y_dis += 10*Math.sin(Player.facing + angle);//finds y distance
+			yd2 += Math.sin(Player.facing + angle);
+			xDist=Math.floor((Player.x_pos+wall.x_dis)/(canvas3D.width*10/maps[roomNum][0].length));
+			yDist=Math.floor((Player.y_pos+wall.y_dis)/(canvas3D.height*10/maps[roomNum].length));
+			if(maps[roomNum][yDist][xDist][0] >= 250){
+				wall.found = true;
+				wall.value = maps[roomNum][yDist][xDist][0];
+				//wall.distance = wall.scaling*Math.abs(Math.sqrt((Math.pow(wall.y_dis,2) + Math.pow(wall.x_dis,2)))*Math.cos(angle));
+				//This was an attempt to remove the fisheye, though it failed I have left it so I may study it later
+				wall.distance = wall.scaling*Math.abs(Math.sqrt((Math.pow(wall.y_dis,2) + Math.pow(wall.x_dis,2)))*Math.cos(angle));
+				wallIntersectionsTemp.push([xd2 + Player.x_pos/10, yd2 + Player.y_pos/10]);
+
+				if (x==250) {
+					wall.midDis = wall.distance;//if the room tile is a wall, the wall is recorded
+				}
+			}
+		}while(!wall.found);
+		draw3DLine(x, quality)//draws a rectange representing a specific angle depending on the quality
+	});
+	wallIntersections = wallIntersectionsTemp;
+}
+
+/*function draw3DWalls(roomNum) {//Draws walls for the 3D interpretation
+	for(x=0;x<canvas3D.width/quality;x++){//draws to each pixel in the canvas width
+		angle = (-(VISIONARC / 2)+(x*VISIONARC*quality/canvas3D.width));//math to determine the angle corresponding to any given pixel on the canvas
 		wall.found = false;wall.x_dis = 0;wall.y_dis = 0;//resets the variables in the wall object 
 		do{//searches incremental for a wall tile in a specific direction
 			wall.x_dis += 10*Math.cos(Player.facing + angle);//finds x distance
 			wall.y_dis += 10*Math.sin(Player.facing + angle);//finds y distance
-			xDist=Math.floor((Player.x_pos+wall.x_dis)/(c2.width*10/maps[roomNum][0].length));
-			yDist=Math.floor((Player.y_pos+wall.y_dis)/(c2.height*10/maps[roomNum].length));
+			xDist=Math.floor((Player.x_pos+wall.x_dis)/(canvas3D.width*10/maps[roomNum][0].length));
+			yDist=Math.floor((Player.y_pos+wall.y_dis)/(canvas3D.height*10/maps[roomNum].length));
 			if(maps[roomNum][yDist][xDist][0] >= 250){
 				wall.found = true;
 				wall.value = maps[roomNum][yDist][xDist][0];
@@ -36,7 +83,8 @@ function draw3DWalls(roomNum) {//Draws walls for the 3D interpretation
 		}while(!wall.found);
 		draw3DLine(x, quality)//draws a rectange representing a specific angle depending on the quality
 	}
-}
+}*/
+
 function draw3DLine(pixelNum, quality) {
 	var c2 = document.getElementById("rayCasting");
 	var ctx2 = c2.getContext("2d");
